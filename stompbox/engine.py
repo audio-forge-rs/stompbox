@@ -6,7 +6,6 @@ via polling; no callbacks or event subscriptions needed.
 
 from __future__ import annotations
 
-import os
 import sys
 import time
 import threading
@@ -53,51 +52,6 @@ class Engine:
 
         self._running = False
         self._chain_name = "default"
-        self._saved_stdout_fd: Optional[int] = None
-        self._saved_stderr_fd: Optional[int] = None
-        self._devnull_fd: Optional[int] = None
-
-    def _suppress_fds(self) -> None:
-        """Redirect fd 1 and 2 to /dev/null for the engine lifetime.
-
-        Native plugins (e.g. AU/VST3) can print from background threads
-        at any time, which corrupts the TUI. We redirect the raw fds to
-        /dev/null (catches C-level writes from plugin threads), then rewire
-        Python's sys.stdout/stderr to dup'd copies of the real terminal
-        so Textual and Python code still render correctly.
-        """
-        self._saved_stdout_fd = os.dup(1)
-        self._saved_stderr_fd = os.dup(2)
-        self._devnull_fd = os.open(os.devnull, os.O_WRONLY)
-        os.dup2(self._devnull_fd, 1)
-        os.dup2(self._devnull_fd, 2)
-
-        # Rewire Python's stdout/stderr to the saved real terminal fds
-        # so Textual (and all Python-level I/O) still works.
-        self._orig_sys_stdout = sys.stdout
-        self._orig_sys_stderr = sys.stderr
-        sys.stdout = os.fdopen(self._saved_stdout_fd, "w", closefd=False)
-        sys.stderr = os.fdopen(self._saved_stderr_fd, "w", closefd=False)
-
-    def _restore_fds(self) -> None:
-        """Restore original stdout/stderr file descriptors."""
-        # Restore Python-level streams first
-        if hasattr(self, "_orig_sys_stdout"):
-            sys.stdout = self._orig_sys_stdout
-        if hasattr(self, "_orig_sys_stderr"):
-            sys.stderr = self._orig_sys_stderr
-
-        if self._saved_stdout_fd is not None:
-            os.dup2(self._saved_stdout_fd, 1)
-            os.close(self._saved_stdout_fd)
-            self._saved_stdout_fd = None
-        if self._saved_stderr_fd is not None:
-            os.dup2(self._saved_stderr_fd, 2)
-            os.close(self._saved_stderr_fd)
-            self._saved_stderr_fd = None
-        if self._devnull_fd is not None:
-            os.close(self._devnull_fd)
-            self._devnull_fd = None
 
     def start(self) -> None:
         """Start audio processing and MIDI input."""
