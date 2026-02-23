@@ -1,0 +1,11 @@
+chain:
+- plugin: Compressor
+  params:
+    threshold_db: -15
+    ratio: 2.0
+- plugin: Gain
+  params:
+    gain_db: 0.0
+- plugin: Limiter
+  params:
+    threshold_db: -0.5

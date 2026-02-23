@@ -1,0 +1,44 @@
+audio:
+  input: default
+  output: default
+  sample_rate: 44100
+  buffer_size: 512
+  channels: 2
+
+midi:
+  input: null            # Set to MIDI device name, "all", or null to disable
+  channel: null          # null = omni (all channels), or 1-16
+  program_change:        # Map program change numbers to chain files
+    # 0: chains/clean.yml
+    # 1: chains/drive.yml
+    # 2: chains/ambient.yml
+
+chain:
+  - plugin: NoiseGate
+    params:
+      threshold_db: -40
+    midi:
+      notes:
+        36: bypass       # MIDI note 36 (C2) toggles bypass
+
+  - plugin: Compressor
+    params:
+      threshold_db: -20
+      ratio: 3.0
+    midi:
+      cc:
+        1: threshold_db  # Mod wheel controls threshold
+
+  - plugin: Reverb
+    params:
+      room_size: 0.5
+      wet_level: 0.2
+    midi:
+      cc:
+        11: wet_level    # Expression pedal controls wet/dry
+
+  - plugin: Limiter
+    params:
+      threshold_db: -1.0
+
+mode: tui                # "tui" or "headless"

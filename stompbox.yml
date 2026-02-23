@@ -1,0 +1,24 @@
+audio:
+  input: default
+  output: BlackHole 2ch
+  sample_rate: 44100
+  buffer_size: 512
+  channels: 2
+midi:
+  input: IAC Driver Bus 1
+chain:
+- plugin: NoiseGate
+  params:
+    threshold_db: -40
+- plugin: Compressor
+  params:
+    threshold_db: -20
+    ratio: 3.0
+- plugin: Reverb
+  params:
+    room_size: 0.5
+    wet_level: 0.2
+- plugin: Limiter
+  params:
+    threshold_db: -1.0
+mode: tui
