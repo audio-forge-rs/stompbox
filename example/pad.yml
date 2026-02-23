@@ -1,0 +1,13 @@
+mode: tui
+midi:
+  input: IAC Driver Bus 1
+  channel: 1
+audio:
+  input: null
+  output: MacBook Pro Speakers
+  # output: BlackHole 2ch
+chain:
+  - path: '/Library/Audio/Plug-Ins/VST3/Surge XT.vst3'
+    # preset: ../presets/surge/init-saw.yml
+    preset: ../presets/surge/pad.yml
+    # preset: ../presets/surge/bass.yml
