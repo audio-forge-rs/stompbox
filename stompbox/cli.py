@@ -150,11 +150,18 @@ def _cmd_run(args: argparse.Namespace) -> None:
 def _run_tui(engine) -> None:
     from .tui.app import StompboxApp
 
-    app = StompboxApp(engine)
-    app.run()
+    # Suppress native plugin stdout/stderr BEFORE Textual starts,
+    # so Textual picks up the rewired sys.stdout for rendering.
+    engine._suppress_fds()
+    try:
+        app = StompboxApp(engine)
+        app.run()
+    finally:
+        engine._restore_fds()
 
 
 def _run_headless(engine) -> None:
+    engine._suppress_fds()
     engine.start()
 
     # Graceful shutdown on SIGINT/SIGTERM
@@ -194,6 +201,7 @@ def _run_headless(engine) -> None:
     finally:
         print("\nStopping...")
         engine.stop()
+        engine._restore_fds()
         print("Done.")
 
 

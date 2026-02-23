@@ -101,7 +101,6 @@ class Engine:
 
     def start(self) -> None:
         """Start audio processing and MIDI input."""
-        self._suppress_fds()
         self.midi.start()
         self.audio.start()
         self._running = True
@@ -111,7 +110,6 @@ class Engine:
         self._running = False
         self.audio.stop()
         self.midi.stop()
-        self._restore_fds()
 
     @property
     def running(self) -> bool:
