@@ -120,7 +120,6 @@ def _cmd_devices() -> None:
 
 def _cmd_run(args: argparse.Namespace) -> None:
     from .config import StompboxConfig
-    from .engine import Engine
     from .project import find_project_config
 
     # Find config
@@ -139,11 +138,14 @@ def _cmd_run(args: argparse.Namespace) -> None:
     elif args.tui:
         config.mode = "tui"
 
-    engine = Engine(config)
-
     if config.mode == "tui":
+        from .engine_proxy import EngineProxy
+        engine = EngineProxy(config)
+        engine.start()  # spawn child before Textual takes over fds
         _run_tui(engine)
     else:
+        from .engine import Engine
+        engine = Engine(config)
         _run_headless(engine)
 
 
