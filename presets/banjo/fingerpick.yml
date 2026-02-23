@@ -1,0 +1,13 @@
+params:
+  m_mic_1_vol: 0.6
+  m_mic_2_vol: 0.2
+  m_mic_3_vol: 0.4
+  m_master_vol: 0.7
+  m_rel_gain: 0.4
+  m_release_time: 350.0
+  m_attack_time: 1.0
+  m_decay_time: 600.0
+  m_sustain_db: 0.0
+  s_strum_toggle: false
+  s_body_response: 10.0
+  fx_bypassed: true

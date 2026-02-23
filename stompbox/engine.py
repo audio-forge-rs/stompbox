@@ -29,7 +29,7 @@ class Engine:
         self.meters = MeterBridge()
 
         # Build plugin chain
-        self.chain = Chain.from_config(config.chain)
+        self.chain = Chain.from_config(config.chain, config.project_dir)
 
         # Audio I/O
         self.audio = AudioIO(
@@ -135,13 +135,14 @@ class Engine:
             PluginConfig(
                 path=p.get("path"),
                 plugin=p.get("plugin"),
+                preset=p.get("preset"),
                 params=p.get("params", {}),
                 midi=p.get("midi", {}),
             )
             for p in chain_data
         ]
 
-        new_chain = Chain.from_config(plugin_configs)
+        new_chain = Chain.from_config(plugin_configs, self.config.project_dir)
 
         # Hot-swap: stop audio, replace chain, restart
         was_running = self._running

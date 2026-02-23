@@ -1,0 +1,18 @@
+params:
+  m_mic_1_vol: 0.3
+  m_mic_2_vol: 0.7
+  m_mic_3_vol: 0.8
+  m_master_vol: 0.65
+  m_rel_gain: 0.5
+  m_release_time: 200.0
+  m_attack_time: 1.0
+  m_decay_time: 400.0
+  m_sustain_db: 0.0
+  s_strum_toggle: false
+  s_body_response: 6.0
+  s_stroke_vol: 1.0
+  fx_bypassed: false
+  fx_eq_toggle: true
+  fx_eq_gain1: -2.0
+  fx_eq_gain2: 8.0
+  fx_eq_freq2: 4000.0

@@ -8,3 +8,6 @@ audio:
   # output: BlackHole 2ch
 chain:
   - path: '/Library/Audio/Plug-Ins/VST3/Surge XT.vst3'
+    preset: ../presets/surge/init-saw.yml
+    # preset: ../presets/surge/pad.yml
+    # preset: ../presets/surge/bass.yml

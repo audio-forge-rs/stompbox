@@ -6,7 +6,7 @@ import math
 import sys
 from collections import deque
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import numpy as np
 from pedalboard import (
@@ -137,7 +137,7 @@ class PluginSlot:
         )
         return np.ascontiguousarray(result, dtype=np.float32)
 
-    def set_param(self, name: str, value: float) -> None:
+    def set_param(self, name: str, value: Any) -> None:
         if hasattr(self.plugin, name):
             try:
                 setattr(self.plugin, name, value)
@@ -174,7 +174,11 @@ class Chain:
         self.output_meter = Meter()
 
     @classmethod
-    def from_config(cls, plugin_configs: list[PluginConfig]) -> Chain:
+    def from_config(
+        cls, plugin_configs: list[PluginConfig], project_dir: Optional[Path] = None
+    ) -> Chain:
+        import yaml as _yaml
+
         slots: list[PluginSlot] = []
         for pc in plugin_configs:
             plugin = _load_plugin(pc)
@@ -193,6 +197,20 @@ class Chain:
 
             slot = PluginSlot(plugin, name, midi_cc, midi_notes)
 
+            # Apply preset params first (if specified)
+            if pc.preset:
+                preset_path = Path(pc.preset)
+                if not preset_path.is_absolute() and project_dir:
+                    preset_path = project_dir / preset_path
+                try:
+                    with open(preset_path) as f:
+                        preset_data = _yaml.safe_load(f) or {}
+                    for param, value in preset_data.get("params", {}).items():
+                        slot.set_param(param, value)
+                except Exception as e:
+                    print(f"Failed to load preset {pc.preset}: {e}", file=sys.stderr)
+
+            # Inline params override preset
             for param, value in pc.params.items():
                 slot.set_param(param, value)
 

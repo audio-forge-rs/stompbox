@@ -16,6 +16,7 @@ class PluginConfig:
 
     path: Optional[str] = None  # File path to VST3/AU plugin
     plugin: Optional[str] = None  # Built-in pedalboard plugin name
+    preset: Optional[str] = None  # Path to preset YAML file
     params: dict = field(default_factory=dict)
     midi: dict = field(default_factory=dict)  # {cc: {num: param}, notes: {num: action}}
 
@@ -90,6 +91,7 @@ class StompboxConfig:
                 PluginConfig(
                     path=p.get("path"),
                     plugin=p.get("plugin"),
+                    preset=p.get("preset"),
                     params=p.get("params", {}),
                     midi=p.get("midi", {}),
                 )

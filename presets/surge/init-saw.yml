@@ -1,0 +1,14 @@
+params:
+  a_osc_1_type: Classic
+  a_osc_1_shape: 0.5
+  a_osc_1_unison_voices: "3 voices"
+  a_osc_1_unison_detune: "30.00 cents"
+  a_osc_2_mute: true
+  a_osc_3_mute: true
+  a_filter_1_type: "LP 12 dB"
+  a_filter_1_cutoff: 2000.0
+  a_filter_1_resonance: 0.2
+  a_amp_eg_attack: "0.000 s"
+  a_amp_eg_decay: "0.500 s"
+  a_amp_eg_sustain: 80.0
+  a_amp_eg_release: "0.200 s"

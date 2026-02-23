@@ -7,5 +7,7 @@ audio:
   output: MacBook Pro Speakers
   # output: BlackHole 2ch
 chain:
-  # - path: /Library/Audio/Plug-Ins/VST3/AEBJ.vst3
-  - path: /Library/Audio/Plug-Ins/Components/AEBJ.component
+  - path: /Library/Audio/Plug-Ins/VST3/AEBJ.vst3
+    preset: ../presets/banjo/fingerpick.yml
+    # preset: ../presets/banjo/bright.yml
+    # preset: ../presets/banjo/mellow.yml
