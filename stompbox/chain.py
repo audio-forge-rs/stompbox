@@ -70,13 +70,13 @@ class PluginSlot:
         midi_notes: Optional[dict[int, str]] = None,
     ) -> None:
         self.plugin = plugin
-        self.board = Pedalboard([plugin])
+        self.is_instrument: bool = getattr(plugin, "is_instrument", False)
+        self.board = None if self.is_instrument else Pedalboard([plugin])
         self.name = name
         self.bypassed = False
         self.meter = Meter()
         self.midi_cc = midi_cc or {}  # {cc_number: param_name}
         self.midi_notes = midi_notes or {}  # {note_number: "bypass"}
-        self.is_instrument: bool = getattr(plugin, "is_instrument", False)
         self._midi_queue: deque = deque()  # raw MIDI bytes for instrument plugins
         self._instrument_initialized = False
 
