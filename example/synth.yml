@@ -1,0 +1,10 @@
+mode: tui
+midi:
+  input: IAC Driver Bus 1
+  channel: 1
+audio:
+  input: null
+  output: MacBook Pro Speakers
+  # output: BlackHole 2ch
+chain:
+  - path: '/Library/Audio/Plug-Ins/VST3/Synthesizer V Studio 2 Pro.vst3'

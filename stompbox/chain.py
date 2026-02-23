@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 import sys
+from collections import deque
 from pathlib import Path
 from typing import Optional
 
@@ -75,6 +76,9 @@ class PluginSlot:
         self.meter = Meter()
         self.midi_cc = midi_cc or {}  # {cc_number: param_name}
         self.midi_notes = midi_notes or {}  # {note_number: "bypass"}
+        self.is_instrument: bool = getattr(plugin, "is_instrument", False)
+        self._midi_queue: deque = deque()  # raw MIDI bytes for instrument plugins
+        self._instrument_initialized = False
 
         # Cache available parameter names for display
         self._param_names: list[str] = []
@@ -84,18 +88,54 @@ class PluginSlot:
         except Exception:
             pass
 
+    def push_midi(self, midi_bytes: bytes) -> None:
+        """Enqueue raw MIDI bytes for instrument plugins. Thread-safe (GIL)."""
+        self._midi_queue.append(midi_bytes)
+
     def process(self, audio: np.ndarray, sample_rate: int) -> np.ndarray:
         """Process audio and update meter. Audio shape: (channels, samples)."""
         if self.bypassed:
+            # Drain MIDI queue even when bypassed to avoid stale buildup
+            self._midi_queue.clear()
             peak = float(np.max(np.abs(audio))) if audio.size > 0 else 0.0
             self.meter.push(peak)
             return audio
 
-        result = self.board(audio, sample_rate)
+        if self.is_instrument:
+            result = self._process_instrument(audio, sample_rate)
+        else:
+            result = self.board(audio, sample_rate)
 
         peak = float(np.max(np.abs(result))) if result.size > 0 else 0.0
         self.meter.push(peak)
         return result
+
+    def _process_instrument(self, audio: np.ndarray, sample_rate: int) -> np.ndarray:
+        """Generate audio from MIDI for instrument plugins."""
+        # Drain MIDI queue into pedalboard-compatible list
+        messages = []
+        while self._midi_queue:
+            try:
+                messages.append((self._midi_queue.popleft(), 0.0))
+            except IndexError:
+                break
+
+        num_channels = audio.shape[0]
+        num_samples = audio.shape[1]
+        duration = num_samples / sample_rate
+
+        reset = not self._instrument_initialized
+        self._instrument_initialized = True
+
+        result = self.plugin(
+            messages,
+            duration=duration,
+            sample_rate=float(sample_rate),
+            num_channels=num_channels,
+            buffer_size=num_samples,
+            reset=reset,
+        )
+        return np.ascontiguousarray(result, dtype=np.float32)
 
     def set_param(self, name: str, value: float) -> None:
         if hasattr(self.plugin, name):
@@ -180,14 +220,15 @@ class Chain:
         return audio
 
     def handle_cc(self, channel: int, cc: int, value: int) -> None:
-        """Route a MIDI CC to plugin parameters."""
+        """Route a MIDI CC to plugin parameters and instrument plugins."""
         normalized = value / 127.0
         for slot in self.slots:
+            # Forward raw CC to instrument plugins
+            if slot.is_instrument and not slot.bypassed:
+                slot.push_midi(bytes([0xB0 | (channel & 0x0F), cc & 0x7F, value & 0x7F]))
+
             if cc in slot.midi_cc:
                 param_name = slot.midi_cc[cc]
-                # Map 0-1 to parameter range
-                # For parameters like threshold_db, we need smarter scaling
-                # For now, use a heuristic: if param contains "db", scale to -60..0
                 current = slot.get_param(param_name)
                 if current is not None and param_name.endswith("_db"):
                     slot.set_param(param_name, -60.0 + normalized * 60.0)
@@ -197,8 +238,15 @@ class Chain:
                     slot.set_param(param_name, normalized)
 
     def handle_note(self, channel: int, note: int, velocity: int) -> None:
-        """Route a MIDI note to plugin actions (bypass toggle)."""
+        """Route a MIDI note to instrument plugins and bypass toggles."""
         for slot in self.slots:
+            # Forward raw note to instrument plugins
+            if slot.is_instrument and not slot.bypassed:
+                if velocity > 0:
+                    slot.push_midi(bytes([0x90 | (channel & 0x0F), note & 0x7F, velocity & 0x7F]))
+                else:
+                    slot.push_midi(bytes([0x80 | (channel & 0x0F), note & 0x7F, 0]))
+
             if note in slot.midi_notes:
                 action = slot.midi_notes[note]
                 if action == "bypass" and velocity > 0:

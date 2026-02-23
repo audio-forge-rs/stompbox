@@ -117,6 +117,7 @@ def _build_snapshot(engine) -> dict:
             "level": lvl,
             "peak": pk,
             "midi_cc": dict(s.midi_cc),
+            "is_instrument": s.is_instrument,
         })
 
     midi_events = []
