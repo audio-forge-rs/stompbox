@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>stompbox</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0e0e14;
+    --surface: #16161e;
+    --border: #2a2a3a;
+    --text: #c8c8d8;
+    --text-dim: #888898;
+    --accent: #58c4dc;
+    --accent2: #b87aff;
+    --green: #7ec87e;
+    --yellow: #e0c060;
+    --red: #e06060;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 80px 0 60px;
+    text-align: center;
+  }
+
+  .hero h1 {
+    font-size: 3.2rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .hero h1 span {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero .tagline {
+    font-size: 1.15rem;
+    color: var(--text-dim);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* ── TUI mockup ── */
+  .tui-frame {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 40px auto;
+    max-width: 640px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    line-height: 1.5;
+    overflow-x: auto;
+  }
+
+  .tui-frame .status {
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .tui-frame .status .label { color: #e0e0ff; font-weight: 600; }
+  .tui-frame .status .chain-name { color: var(--accent); font-weight: 600; }
+
+  .tui-frame .chain-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 14px 0;
+    flex-wrap: nowrap;
+  }
+
+  .pedal {
+    border: 1px solid var(--accent);
+    border-radius: 4px;
+    padding: 6px 12px;
+    text-align: center;
+    min-width: 80px;
+  }
+  .pedal .name { color: #fff; font-weight: 500; font-size: 0.78rem; }
+  .pedal .level { color: var(--green); font-size: 0.72rem; }
+  .pedal.bypassed { border-color: #555; }
+  .pedal.bypassed .name { color: #666; text-decoration: line-through; }
+
+  .arrow { color: #666; font-size: 0.75rem; }
+
+  .meter-line { margin: 4px 0; white-space: nowrap; }
+  .meter-label { color: var(--text-dim); display: inline-block; width: 36px; }
+  .meter-bar { letter-spacing: -0.5px; }
+  .meter-g { color: var(--green); }
+  .meter-y { color: var(--yellow); }
+  .meter-dot { color: #333; }
+  .meter-pk { color: #fff; }
+  .meter-db { color: var(--text-dim); font-size: 0.75rem; }
+
+  .midi-line { color: var(--text-dim); margin-top: 10px; font-size: 0.78rem; }
+  .midi-line .port { color: var(--accent); }
+  .midi-line .note { color: var(--green); }
+  .midi-line .cc { color: var(--accent); }
+
+  /* ── Sections ── */
+  section {
+    padding: 48px 0;
+  }
+
+  section h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 20px;
+    letter-spacing: -0.02em;
+  }
+
+  section p {
+    margin-bottom: 16px;
+    color: var(--text);
+    font-size: 1.02rem;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  /* ── Code blocks ── */
+  pre {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin: 16px 0;
+    color: var(--text);
+  }
+
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88em;
+    background: var(--surface);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--accent);
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+    color: inherit;
+  }
+
+  .comment { color: var(--text-dim); }
+  .key { color: var(--accent); }
+  .val { color: var(--green); }
+  .str { color: var(--yellow); }
+
+  /* ── Keyboard shortcuts ── */
+  kbd {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.82rem;
+    color: #fff;
+    margin: 0 2px;
+  }
+
+  .keys-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 8px 20px;
+    margin: 16px 0;
+    font-size: 0.95rem;
+  }
+
+  .keys-grid kbd { justify-self: end; }
+
+  /* ── Footer ── */
+  footer {
+    padding: 48px 0;
+    text-align: center;
+    color: var(--text-dim);
+    font-size: 0.88rem;
+  }
+
+  footer a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  footer a:hover { text-decoration: underline; }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .hero h1 { font-size: 2.2rem; }
+    .tui-frame { font-size: 0.72rem; padding: 14px; }
+    .chain-row { gap: 4px; }
+    .pedal { min-width: 60px; padding: 4px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1><span>stompbox</span></h1>
+    <p class="tagline">A MIDI-controlled audio pedalboard that runs in your terminal.</p>
+  </div>
+
+  <!-- TUI mockup -->
+  <div class="tui-frame">
+    <div class="status">
+      <span class="label"> STOMPBOX </span>&nbsp;
+      <span class="chain-name">drive</span>&nbsp;
+      <span>44k &middot; 512buf &middot; 2ch</span>&nbsp;
+      <span>MacBook Pro Mic &rarr; Speakers</span>
+    </div>
+
+    <div class="chain-row">
+      <span class="arrow">IN &mdash;&#9656;</span>
+      <div class="pedal">
+        <div class="name">NoiseGate</div>
+        <div class="level">-18.2</div>
+      </div>
+      <span class="arrow">&mdash;&#9656;</span>
+      <div class="pedal">
+        <div class="name">Distortion</div>
+        <div class="level">-6.4</div>
+      </div>
+      <span class="arrow">&mdash;&#9656;</span>
+      <div class="pedal bypassed">
+        <div class="name">Reverb</div>
+        <div class="level">&middot;</div>
+      </div>
+      <span class="arrow">&mdash;&#9656;</span>
+      <div class="pedal">
+        <div class="name">Limiter</div>
+        <div class="level">-1.0</div>
+      </div>
+      <span class="arrow">&mdash;&#9656; OUT</span>
+    </div>
+
+    <div class="meter-line">
+      <span class="meter-label">IN</span>
+      <span class="meter-bar"><span class="meter-g">&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;</span><span class="meter-dot">&middot;&middot;&middot;&middot;&middot;&middot;&middot;&middot;&middot;&middot;&middot;&middot;&middot;</span></span>
+      <span class="meter-db">&nbsp;-12.3dB</span>
+    </div>
+    <div class="meter-line">
+      <span class="meter-label">OUT</span>
+      <span class="meter-bar"><span class="meter-g">&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;&block;</span><span class="meter-y">&block;&block;&block;&block;</span><span class="meter-dot">&middot;&middot;&middot;&middot;</span></span>
+      <span class="meter-db">&nbsp;-2.1dB&nbsp;&nbsp;pk -0.8dB</span>
+    </div>
+
+    <div class="midi-line">
+      MIDI <span class="port">&#9656; IAC Driver Bus 1</span>&nbsp;&nbsp;
+      note <span class="note">C#4</span> ch 1 vel 100&nbsp;&nbsp;
+      <span class="cc">CC74 64</span>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- What it is -->
+  <section>
+    <h2>What is this?</h2>
+
+    <p>Stompbox turns your Mac into a guitar pedalboard. Plug in a mic or an instrument, wire up some effects, and tweak everything with MIDI controllers. It all runs inside a terminal UI that shows your signal chain, live VU meters, and incoming MIDI data at a glance.</p>
+
+    <p>Under the hood, it uses Spotify's <code>pedalboard</code> library for plugin hosting, which means you get access to 19 built-in effects plus any VST3 or Audio Unit plugin on your system. Virtual instrument plugins work too, generating audio straight from MIDI input.</p>
+
+    <p>The whole thing is configured with a single YAML file. No DAW required. No GUI windows stealing focus. Just audio in, effects, audio out, and a TUI that stays out of your way.</p>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Getting started -->
+  <section>
+    <h2>Getting started</h2>
+
+    <p>Install stompbox with pip, then initialize a project directory. This creates a <code>stompbox.yml</code> config, a <code>chains/</code> folder with a few presets, and a <code>recordings/</code> directory for captured audio.</p>
+
+<pre><code>pip install stompbox
+stompbox init
+stompbox run</code></pre>
+
+    <p>That's it. The TUI launches, your default audio device opens, and you're processing audio through whatever chain is defined in your config. If you want to see what audio and MIDI devices are available on your system, there's a command for that too.</p>
+
+<pre><code>stompbox devices</code></pre>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Configuration -->
+  <section>
+    <h2>Configuration</h2>
+
+    <p>Everything lives in <code>stompbox.yml</code>. You pick your audio devices, set your sample rate and buffer size, point at a MIDI input, and define your signal chain as an ordered list of plugins. Each plugin can have parameters dialed in and MIDI CC mappings assigned right in the config.</p>
+
+<pre><code><span class="key">audio</span>:
+  <span class="key">input</span>: <span class="str">MacBook Pro Microphone</span>
+  <span class="key">output</span>: <span class="str">BlackHole 2ch</span>
+  <span class="key">sample_rate</span>: <span class="val">44100</span>
+  <span class="key">buffer_size</span>: <span class="val">512</span>
+
+<span class="key">midi</span>:
+  <span class="key">input</span>: <span class="str">IAC Driver Bus 1</span>
+
+<span class="key">chain</span>:
+  - <span class="key">plugin</span>: <span class="str">NoiseGate</span>
+    <span class="key">params</span>:
+      <span class="key">threshold_db</span>: <span class="val">-40</span>
+  - <span class="key">plugin</span>: <span class="str">Compressor</span>
+    <span class="key">params</span>:
+      <span class="key">threshold_db</span>: <span class="val">-20</span>
+      <span class="key">ratio</span>: <span class="val">3.0</span>
+    <span class="key">midi</span>:
+      <span class="key">cc</span>:
+        <span class="val">74</span>: <span class="str">threshold_db</span>
+  - <span class="key">plugin</span>: <span class="str">Reverb</span>
+    <span class="key">params</span>:
+      <span class="key">room_size</span>: <span class="val">0.5</span>
+      <span class="key">wet_level</span>: <span class="val">0.2</span></code></pre>
+
+    <p>For external plugins, swap <code>plugin</code> for <code>path</code> and point it at a <code>.vst3</code> or <code>.component</code> file. Set <code>audio.input</code> to <code>null</code> for instrument plugins that generate audio from MIDI rather than processing an input signal.</p>
+
+<pre><code><span class="key">audio</span>:
+  <span class="key">input</span>: <span class="val">null</span>  <span class="comment"># instrument mode</span>
+  <span class="key">output</span>: <span class="str">MacBook Pro Speakers</span>
+
+<span class="key">chain</span>:
+  - <span class="key">path</span>: <span class="str">/Library/Audio/Plug-Ins/VST3/MyInstrument.vst3</span></code></pre>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Built-in plugins -->
+  <section>
+    <h2>Built-in plugins</h2>
+
+    <p>Stompbox ships with 19 built-in effects from pedalboard. These load instantly without any external files. You can mix and match them freely in your chain, and they all support real-time parameter control via MIDI CC.</p>
+
+    <p><code>Bitcrush</code> <code>Chorus</code> <code>Clipping</code> <code>Compressor</code> <code>Convolution</code> <code>Delay</code> <code>Distortion</code> <code>Gain</code> <code>HighpassFilter</code> <code>HighShelfFilter</code> <code>LadderFilter</code> <code>Limiter</code> <code>LowpassFilter</code> <code>LowShelfFilter</code> <code>NoiseGate</code> <code>PeakFilter</code> <code>Phaser</code> <code>PitchShift</code> <code>Reverb</code></p>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Chain presets -->
+  <section>
+    <h2>Chain presets</h2>
+
+    <p>Drop YAML files in the <code>chains/</code> directory and switch between them on the fly using keyboard shortcuts or MIDI program changes. Each preset is just the chain portion of the config, so you can build up a library of tones and swap them without restarting.</p>
+
+<pre><code><span class="comment"># chains/ambient.yml</span>
+<span class="key">chain</span>:
+  - <span class="key">plugin</span>: <span class="str">Chorus</span>
+    <span class="key">params</span>: { <span class="key">rate_hz</span>: <span class="val">0.5</span>, <span class="key">depth</span>: <span class="val">0.4</span>, <span class="key">mix</span>: <span class="val">0.3</span> }
+  - <span class="key">plugin</span>: <span class="str">Delay</span>
+    <span class="key">params</span>: { <span class="key">delay_seconds</span>: <span class="val">0.35</span>, <span class="key">feedback</span>: <span class="val">0.4</span> }
+  - <span class="key">plugin</span>: <span class="str">Reverb</span>
+    <span class="key">params</span>: { <span class="key">room_size</span>: <span class="val">0.9</span>, <span class="key">wet_level</span>: <span class="val">0.5</span> }</code></pre>
+
+    <p>Map MIDI program changes to chain files in your config, and your foot controller becomes a preset switcher.</p>
+
+<pre><code><span class="key">midi</span>:
+  <span class="key">input</span>: <span class="str">IAC Driver Bus 1</span>
+  <span class="key">program_change</span>:
+    <span class="val">0</span>: <span class="str">chains/clean.yml</span>
+    <span class="val">1</span>: <span class="str">chains/drive.yml</span>
+    <span class="val">2</span>: <span class="str">chains/ambient.yml</span></code></pre>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Keyboard shortcuts -->
+  <section>
+    <h2>Keyboard shortcuts</h2>
+
+    <p>The TUI responds to single keypresses for everything you need during a session. Bypass individual pedals by number, kill the whole chain at once, or flip through your presets without ever touching a mouse.</p>
+
+    <div class="keys-grid">
+      <kbd>1</kbd><span>through <kbd>9</kbd> &mdash; toggle bypass on that pedal</span>
+      <kbd>SPC</kbd><span>master bypass &mdash; all pedals on or off</span>
+      <kbd>r</kbd><span>reset peak meters</span>
+      <kbd>[</kbd><span>previous chain preset</span>
+      <kbd>]</kbd><span>next chain preset</span>
+      <kbd>q</kbd><span>quit</span>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Architecture -->
+  <section>
+    <h2>How it works</h2>
+
+    <p>Stompbox runs the audio engine in a separate process. Native VST3 and AU plugins love to write debug output to stdout from background threads, which would corrupt the terminal UI. By isolating the engine in a child process with its stdout and stderr redirected to <code>/dev/null</code>, the TUI gets a clean terminal to paint on. The two processes talk over a pipe at 30 frames per second, so the meters and chain state you see are never more than one frame stale.</p>
+
+    <p>Audio flows through PortAudio via <code>sounddevice</code>, MIDI comes in through macOS CoreMIDI (direct ctypes, no compiled dependencies), and plugins are hosted by pedalboard's Juce-based infrastructure. The TUI is built with Textual, rendering at 30fps for meters and 10fps for the chain view. The whole architecture is lock-free where it counts: audio callbacks, meter reads, and MIDI dispatch all rely on Python's GIL for atomic operations instead of explicit locks.</p>
+
+    <p>Headless mode skips the subprocess isolation entirely and runs everything in a single process with a minimal status line. Useful for recording or running as a background audio processor.</p>
+  </section>
+
+  <hr class="divider">
+
+  <!-- Footer -->
+  <footer>
+    <p>stompbox &mdash; built with <a href="https://github.com/spotify/pedalboard">pedalboard</a>, <a href="https://textual.textualize.io/">Textual</a>, and <a href="https://python-sounddevice.readthedocs.io/">sounddevice</a></p>
+  </footer>
+
+</div>
+
+</body>
+</html>
